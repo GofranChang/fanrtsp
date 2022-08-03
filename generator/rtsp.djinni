@@ -1,0 +1,14 @@
+rtsp_status = enum {
+    SUCCESS;
+    UNINITIALIZED;
+    MULTI_OPERATOR;
+    IO_OPERATOR_ERR;
+    ILLEGAL_PARAMS;
+    INTERNAL_ERR;
+    LICENSE_ERR;
+    MULTI_INIT;
+}
+
+rtsp_server = interface +c {
+    static create(ip:string, port:i16): rtsp_server;
+}
