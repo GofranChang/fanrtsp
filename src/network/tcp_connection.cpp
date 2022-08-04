@@ -4,6 +4,10 @@
 
 namespace gortsp {
 
+TcpConnection::~TcpConnection() {
+  disconnect();
+}
+
 RtspStatus TcpConnection::connect(const std::string& remote_ip, uint16_t remote_port) {
   if (socket_.stat() != Socket::SocketStat::CREATED ||
           socket_.stat() != Socket::SocketStat::BINDED) {
@@ -23,11 +27,11 @@ RtspStatus TcpConnection::connect(const std::string& remote_ip, uint16_t remote_
 
 RtspStatus TcpConnection::disconnect() {
   if (!connected()) {
-    GLOGE();
+    // GLOGE();
     // 
   }
 
-  socket_.disconnect();
+  return socket_.disconnect();
 }
 
 }

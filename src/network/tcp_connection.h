@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "socket/socket.h"
+#include "socket.h"
 
 namespace gortsp {
 

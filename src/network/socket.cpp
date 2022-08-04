@@ -42,7 +42,7 @@ RtspStatus Socket::create() {
   }
 
   change_status(SocketStat::CREATED);
-  GLOGT("Create {} socket succes, fd {}", ((SocketType::TCP_SOCKET == type_) ? "TCP" : "UDP", fd_));
+  GLOGT("Create {} socket succes, fd {}", ((SocketType::TCP_SOCKET == type_) ? "TCP" : "UDP"), fd_);
   return RtspStatus::SUCCESS;
 }
 
@@ -99,10 +99,10 @@ RtspStatus Socket::accept(Socket& connsock) {
     return RtspStatus::ILLEGAL_PARAMS;
   }
 
-  if (connsock.type() != SocketType::TCP_SOCKET) {
-    GLOGE("Accept failed, input socket is UDP socket");
-    return RtspStatus::ILLEGAL_PARAMS;
-  }
+  // if (connsock.type() != SocketType::TCP_SOCKET) {
+  //   GLOGE("Accept failed, input socket is UDP socket");
+  //   return RtspStatus::ILLEGAL_PARAMS;
+  // }
 
   change_status(SocketStat::ACCEPTING);
 
