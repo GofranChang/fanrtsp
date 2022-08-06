@@ -34,7 +34,8 @@ RtspStatus TcpServer::init(uint16_t port) {
 
   task_scheduler_.register_task(
       server_socket_.fd(),
-      TcpServer::on_connect);
+      TcpServer::on_connect,
+      this);
 
   return RtspStatus::SUCCESS;
 }
@@ -52,7 +53,6 @@ void TcpServer::start() {
 }
 
 void TcpServer::on_connect(int fd, short events, void* p) {
-  // GLOGD("On connect...");
   if (nullptr == p) return;
 
   TcpServer* srv = static_cast<TcpServer*>(p);
