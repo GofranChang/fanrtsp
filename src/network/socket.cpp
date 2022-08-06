@@ -170,6 +170,36 @@ RtspStatus Socket::disconnect() {
   return this->close();
 }
 
+RtspStatus Socket::set_non_block() {
+  if (status_ < SocketStat::CREATED) {
+    GLOGE("Please create socket at firsrt");
+    return RtspStatus::UNINITIALIZED;
+  }
+
+#ifdef _WIN32
+  unsigned long nonblocking = 1;
+  if (ioctlsocket(fd, FIONBIO, &nonblocking) == SOCKET_ERROR) {
+    event_sock_warn(fd, "fcntl(%d, F_GETFL)", (int)fd);
+    return -1;
+  }
+
+#else
+  int flags;
+  if ((flags = fcntl(fd_, F_GETFL, NULL)) < 0) {
+    GLOGW("fcntl({}, F_GETFL)", fd_);
+    return RtspStatus::IO_OPERATOR_ERR;
+  }
+  if (!(flags & O_NONBLOCK)) {
+    if (fcntl(fd_, F_SETFL, flags | O_NONBLOCK) == -1) {
+      GLOGW("fcntl({}, F_SETFL)", fd_);
+      RtspStatus::IO_OPERATOR_ERR;
+    }
+  }
+#endif
+
+  return RtspStatus::SUCCESS;
+}
+
 RtspStatus Socket::set_fd(int fd) {
   if (fd_ > 0) {
     GLOGE("Set fd failed, cur fd {}", fd_);

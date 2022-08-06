@@ -56,7 +56,7 @@ public:
 
   RtspStatus disconnect();
 
-  RtspStatus set_non_block() {}
+  RtspStatus set_non_block();
 
   RtspStatus set_block(int timeout) {}
 
