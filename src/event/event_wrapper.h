@@ -1,12 +1,17 @@
+#pragma once
+
 #include <vector>
 #include <string>
 #include <functional>
 
 #include "network/socket.h"
+#include "common/logger.h"
 
 #include "event2/event.h"
 #include "event2/bufferevent.h"
 #include "event2/buffer.h"
+
+void xxx(evutil_socket_t fd, short event, void *arg);
 
 namespace gortsp {
 
@@ -39,15 +44,31 @@ public:
       // TODO:
     // }
 
-    event *ev;  
+    event *ev;
+    cb(1, 1, nullptr);
+    GLOGE("{}", cb.target_type().name());
+    // GLOGE("")
+    typedef void (*event_cb)(evutil_socket_t, short, void *);
+    // GLOGE("")
+    // NSt3__16__bindIMN6gortsp9TcpServerEFvisPvEJPS2_RKNS_12placeholders4__phILi1EEERKNS8_ILi2EEERKNS8_ILi3EEEEEE
+#if 1
     ev = event_new(
         ptr_,
         fd,
         EV_TIMEOUT | EV_READ | EV_PERSIST,
-        cb.target<void(int, short, void*)>(),
+        *cb.target<event_cb>(),
         argc);
 
+    GLOGE("")
+    event_add(ev, nullptr);
     evts_.push_back(ev);
+#endif
+  }
+
+  void start() {
+    // event_base_dispatch(ptr_);
+    int res = event_base_loop(ptr_, 0);
+    GLOGE("{}", res);
   }
 
   // void add_event(Event* evt) {}

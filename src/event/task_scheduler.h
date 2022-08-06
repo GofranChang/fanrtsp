@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <thread>
 #include <functional>
@@ -14,6 +16,7 @@ public:
   TaskScheduler(size_t max_threads) :
       max_threads_(max_threads),
       thread_pool_(max_threads) {
+    GLOGD("Event method : {}", ebs_.method());
   }
 
   RtspStatus register_task(int fd, TaskFunction&& f);

@@ -6,4 +6,8 @@ RtspStatus TaskScheduler::register_task(int fd, TaskFunction&& f) {
   ebs_.register_event(fd, f, nullptr);
 }
 
+void TaskScheduler::start() {
+  ebs_.start();
+}
+
 }

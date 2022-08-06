@@ -31,3 +31,6 @@ add_library(gortsp SHARED
     ${TASK_SRC})
 
 target_link_libraries(gortsp event)
+
+add_executable(tcp_server_test test/tcp_server_test.cpp)
+target_link_libraries(tcp_server_test gortsp)

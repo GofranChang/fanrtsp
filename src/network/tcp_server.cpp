@@ -10,29 +10,53 @@ namespace gortsp {
 TcpServer::~TcpServer() {}
 
 RtspStatus TcpServer::init(uint16_t port) {
-  server_socket_.create();
-  server_socket_.set_non_block();
-  server_socket_.bind("0.0.0.0", port);
-  server_socket_.listen(0);
+  if (server_socket_.create() != RtspStatus::SUCCESS) {
+    GLOGE("TCP server err : create server socket failed");
+    return RtspStatus::INTERNAL_ERR;
+  }
+
+  if (server_socket_.set_non_block() != RtspStatus::SUCCESS) {
+    GLOGE("TCP server err : set socket non block failed");
+    return RtspStatus::INTERNAL_ERR;
+  }
+
+  if (server_socket_.bind("0.0.0.0", port) != RtspStatus::SUCCESS) {
+    GLOGE("TCP server err : bind local addr failed");
+    return RtspStatus::INTERNAL_ERR;
+  }
+
+  if (server_socket_.listen(0) != RtspStatus::SUCCESS) {
+    GLOGE("TCP server err : bind local addr failed");
+    return RtspStatus::INTERNAL_ERR;
+  }
+
+  GLOGD("TCP : server socket init success");
 
   task_scheduler_.register_task(
       server_socket_.fd(),
-      std::bind(
-          &TcpServer::on_connect,
-          this,
-          std::placeholders::_1,
-          std::placeholders::_2,
-          std::placeholders::_3));
+      TcpServer::on_connect);
 
   return RtspStatus::SUCCESS;
 }
 
-void TcpServer::on_connect(int fd, short events, void* args) {
+void TcpServer::on_connect_internal(int fd, short events, void* args) {
   if (fd != server_socket_.fd()) return;
 
   GLOGD("On connect...");
   Socket clientsock;
   server_socket_.accept(clientsock);
+}
+
+void TcpServer::start() {
+  task_scheduler_.start();
+}
+
+void TcpServer::on_connect(int fd, short events, void* p) {
+  // GLOGD("On connect...");
+  if (nullptr == p) return;
+
+  TcpServer* srv = static_cast<TcpServer*>(p);
+  srv->on_connect_internal(fd, events, p);
 }
 
 }

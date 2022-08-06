@@ -26,9 +26,14 @@ explicit TcpServer(uint16_t max_connections) :
 public:
   RtspStatus init(uint16_t port);
 
-  void on_connect(int fd, short events, void* args);
+  void on_connect_internal(int fd, short events, void* args);
 
-  void on_read(int fd, short events, void* args);
+  void on_read_internal(int fd, short events, void* args);
+
+  void start();
+
+public:
+  static void on_connect(int fd, short events, void* p);
 
 private:
   Socket server_socket_;
