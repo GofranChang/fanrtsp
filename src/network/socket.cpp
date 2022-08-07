@@ -8,11 +8,52 @@
 #include <netinet/in.h>
 
 #include "common/logger.h"
+#include "tcp_connection.h"
 
 namespace gortsp {
 
+Socket::Socket() :
+    type_(SocketType::UDP_SOCKET),
+    fd_(-1),
+    status_(SocketStat::UNINITIALIZED),
+    connected_(false) {
+}
+
+Socket::Socket(SocketType type) :
+    type_(type),
+    fd_(-1),
+    status_(SocketStat::UNINITIALIZED),
+    connected_(false) {
+}
+
+Socket::Socket(Socket&& other) {
+  type_ = other.type_;
+  status_ = other.status_;
+  fd_ = other.fd_;
+  connected_ = other.connected_;
+
+  other.type_ = SocketType::UDP_SOCKET;
+  other.status_ = SocketStat::UNINITIALIZED;
+  other.fd_ = -1;
+  other.connected_ = false;
+}
+
 Socket::~Socket() {
   close();
+}
+
+RtspStatus Socket::move(Socket& other) {
+  type_ = other.type();
+  fd_ = other.fd();
+  status_ = other.stat();
+  other.connected_ = other.connected();
+
+  other.type_ = SocketType::UDP_SOCKET;
+  other.fd_ = -1;
+  other.status_ = SocketStat::UNINITIALIZED;
+  other.connected_ = false;
+
+  return RtspStatus::SUCCESS;
 }
 
 RtspStatus Socket::set_type(SocketType type) {
@@ -32,10 +73,10 @@ RtspStatus Socket::create() {
   }
 
   int socket_domain = AF_INET;
-  int SocketType = (SocketType::TCP_SOCKET == type_) ? SOCK_STREAM : SOCK_DGRAM;
+  int socket_type = (SocketType::TCP_SOCKET == type_) ? SOCK_STREAM : SOCK_DGRAM;
   int socket_protocal = (SocketType::TCP_SOCKET == type_) ? IPPROTO_TCP : IPPROTO_UDP;
 
-  fd_ = ::socket(socket_domain, SocketType, socket_protocal);
+  fd_ = ::socket(socket_domain, socket_type, socket_protocal);
   if (fd_ < 0) {
     GLOGE("Create socket error : {}", strerror(errno));
     return RtspStatus::IO_OPERATOR_ERR;
@@ -65,7 +106,7 @@ RtspStatus Socket::bind(const std::string& ip, uint16_t port) {
 
   struct sockaddr_in addr = {0};
   addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = inet_addr(ip.c_str());
+  addr.sin_addr.s_addr = INADDR_ANY;
   addr.sin_port = htons(port);
 
   if (::bind(fd_, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
@@ -93,24 +134,25 @@ RtspStatus Socket::listen(int backlog) {
   return RtspStatus::SUCCESS;
 }
 
-RtspStatus Socket::accept(Socket& connsock) {
+RtspStatus Socket::accept(TcpConnection& conn) {
   if (type_ != SocketType::TCP_SOCKET || status_ != SocketStat::LISTENED) {
     GLOGE("Listen failed, socket type {}, cur status {}", type_, status_);
     return RtspStatus::ILLEGAL_PARAMS;
   }
-
-  // if (connsock.type() != SocketType::TCP_SOCKET) {
-  //   GLOGE("Accept failed, input socket is UDP socket");
-  //   return RtspStatus::ILLEGAL_PARAMS;
-  // }
 
   change_status(SocketStat::ACCEPTING);
 
   struct sockaddr_in addr = { 0 };
   socklen_t addrlen = sizeof(struct sockaddr_in);
 
+  Socket connsock;
+  GLOGT("Start accept, local fd {}", fd_);
   int connected_fd = ::accept(fd_, (struct sockaddr*)&addr, &addrlen);
   connsock.set_fd(connected_fd);
+
+  GLOGT("Connected fd {}", connsock.fd());
+
+  conn.accept(connsock);
 
   // TODO: Set none block fd;
   // setNonBlockAndCloseOnExec(connfd);
@@ -168,6 +210,16 @@ RtspStatus Socket::disconnect() {
   }
 
   return this->close();
+}
+
+RtspStatus Socket::send(const std::string& data) {
+  // TODO: check status
+  if (::send(fd_, data.c_str(), data.size(), 0) < data.size()) {
+    GLOGE("Send socket {} failed, \"{}\"", fd_, strerror(errno));
+    return RtspStatus::IO_OPERATOR_ERR;
+  }
+
+  return RtspStatus::SUCCESS;
 }
 
 RtspStatus Socket::set_non_block() {

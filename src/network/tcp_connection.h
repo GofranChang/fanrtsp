@@ -14,15 +14,23 @@ public:
     TcpClosed,
   };
 
+  friend class Socket;
+
 public:
   TcpConnection();
 
   ~TcpConnection();
 
 public:
+  RtspStatus accept(Socket& socket);
+
   RtspStatus connect(const std::string& remote_ip, uint16_t remote_port);
 
   RtspStatus disconnect();
+
+  RtspStatus send(const std::string& data);
+
+  RtspStatus recv();
 
   inline bool connected() const { return socket_.connected(); }
 

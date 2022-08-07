@@ -7,6 +7,8 @@
 
 namespace gortsp {
 
+class TcpConnection;
+
 class Socket {
 public:
   enum class SocketType : int {
@@ -23,19 +25,20 @@ public:
     CONNETED,
   };
 
-  Socket() :
-      type_(SocketType::UDP_SOCKET),
-      fd_(-1),
-      status_(SocketStat::UNINITIALIZED),
-      connected_(false) {}
+  Socket();
 
-  explicit Socket(SocketType type) :
-      type_(type),
-      fd_(-1),
-      status_(SocketStat::UNINITIALIZED),
-      connected_(false) {}
+  explicit Socket(SocketType type);
+
+  Socket(Socket&&);
 
   ~Socket();
+
+  RtspStatus move(Socket& other);
+
+private:
+  Socket(const Socket&) = delete;
+
+  Socket operator=(const Socket&) = delete;
 
 public:
   RtspStatus set_type(SocketType type);
@@ -48,13 +51,15 @@ public:
 
   RtspStatus listen(int backlog);
 
-  RtspStatus accept(Socket& connsock);
+  RtspStatus accept(TcpConnection& conn);
 
   RtspStatus connect(const std::string& ip,
                      uint16_t port,
                      int timeout);
 
   RtspStatus disconnect();
+
+  RtspStatus send(const std::string& data);
 
   RtspStatus set_non_block();
 

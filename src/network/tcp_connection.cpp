@@ -4,6 +4,14 @@
 
 namespace gortsp {
 
+// TcpConnection* TcpConnection::create_from_accept() {
+//   return nullptr;
+// }
+
+// TcpConnection* TcpConnection::create_from_connect() {
+//   return nullptr;
+// }
+
 TcpConnection::TcpConnection() :
     remote_ip_(""),
     remote_port_(0),
@@ -14,6 +22,11 @@ TcpConnection::TcpConnection() :
 
 TcpConnection::~TcpConnection() {
   disconnect();
+}
+
+RtspStatus TcpConnection::accept(Socket& socket) {
+  socket_.move(socket);
+  return RtspStatus::SUCCESS;
 }
 
 RtspStatus TcpConnection::connect(const std::string& remote_ip, uint16_t remote_port) {
@@ -40,6 +53,10 @@ RtspStatus TcpConnection::disconnect() {
   }
 
   return socket_.disconnect();
+}
+
+RtspStatus TcpConnection::send(const std::string& data) {
+  return socket_.send(data);
 }
 
 }

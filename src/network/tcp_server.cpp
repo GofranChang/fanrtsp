@@ -39,7 +39,7 @@ RtspStatus TcpServer::init(uint16_t port) {
     return RtspStatus::INTERNAL_ERR;
   }
 
-  if (server_socket_.listen(0) != RtspStatus::SUCCESS) {
+  if (server_socket_.listen(10) != RtspStatus::SUCCESS) {
     GLOGE("TCP server err : bind local addr failed");
     return RtspStatus::INTERNAL_ERR;
   }
@@ -58,8 +58,12 @@ void TcpServer::on_connect_internal(int fd, short events, void* args) {
   if (fd != server_socket_.fd()) return;
 
   GLOGD("On connect...");
-  Socket clientsock;
-  server_socket_.accept(clientsock);
+  TcpConnection conn;
+  server_socket_.accept(conn);
+
+  // connections_.insert(conn);
+
+  conn.send("Welcome to my server");
 }
 
 void TcpServer::start() {
