@@ -23,9 +23,9 @@ public:
   void start();
 
 private:
-  void on_connect_internal(int fd, short events, void* args);
+  virtual void on_connect_internal(int fd, short events, void* args);
 
-  void on_read_internal(int fd, short events, void* args);
+  virtual void on_read_internal(int fd, short events, void* args);
 
 private:
   Socket server_socket_;
