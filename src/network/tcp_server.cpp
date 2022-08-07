@@ -7,7 +7,21 @@
 
 namespace gortsp {
 
-TcpServer::~TcpServer() {}
+TcpServer::TcpServer() :
+    server_socket_(Socket::SocketType::TCP_SOCKET),
+    max_connections_(16),
+    task_scheduler_(17) {
+}
+
+TcpServer::TcpServer(uint16_t max_connections) :
+    server_socket_(Socket::SocketType::TCP_SOCKET),
+    max_connections_(max_connections),
+    task_scheduler_(max_connections + 1) {
+}
+
+TcpServer::~TcpServer() {
+  // TODO: Do uninit
+}
 
 RtspStatus TcpServer::init(uint16_t port) {
   if (server_socket_.create() != RtspStatus::SUCCESS) {

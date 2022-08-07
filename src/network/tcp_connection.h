@@ -15,13 +15,7 @@ public:
   };
 
 public:
-  TcpConnection() :
-      remote_ip_(""),
-      remote_port_(0),
-      local_ip_(""),
-      local_port_(0),
-      socket_(Socket::SocketType::TCP_SOCKET) {
-  }
+  TcpConnection();
 
   ~TcpConnection();
 

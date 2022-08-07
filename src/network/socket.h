@@ -58,7 +58,7 @@ public:
 
   RtspStatus set_non_block();
 
-  RtspStatus set_block(int timeout) {}
+  RtspStatus set_block(int timeout);
 
   inline SocketType type() const { return type_; }
 

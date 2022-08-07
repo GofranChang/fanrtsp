@@ -8,13 +8,13 @@ set(NETWORK_SRC
   src/network/socket.cpp
   src/network/tcp_connection.h
   src/network/tcp_connection.cpp
+  
   src/network/tcp_server.h
   src/network/tcp_server.cpp
 )
 
 set(TASK_SRC
   src/event/event_wrapper.h
-  src/event/event_wrapper.cpp
   src/event/task_scheduler.h
   src/event/task_scheduler.cpp
 )

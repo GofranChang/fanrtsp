@@ -200,6 +200,10 @@ RtspStatus Socket::set_non_block() {
   return RtspStatus::SUCCESS;
 }
 
+RtspStatus Socket::set_block(int timeout) {
+  return RtspStatus::UNINITIALIZED;
+}
+
 RtspStatus Socket::set_fd(int fd) {
   if (fd_ > 0) {
     GLOGE("Set fd failed, cur fd {}", fd_);
