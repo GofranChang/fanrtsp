@@ -55,6 +55,7 @@ private:
   event* ptr_;
 }; // class Event
 
+#if 0
 class BufferEvent {
 public:
   friend class EventBase;
@@ -102,6 +103,7 @@ public:
 private:
   bufferevent* ptr_;
 }; // class BufferEvent
+#endif
 
 class EventBase {
 public:
