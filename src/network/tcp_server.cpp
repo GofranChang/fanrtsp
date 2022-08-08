@@ -57,7 +57,7 @@ void TcpServer::start() {
 }
 
 RtspStatus TcpServer::on_connect(int fd, short events) {
-  GLOGT("On connection");
+  GLOGT("On connection, event {}", events);
 
   TcpConnection conn;
   server_socket_.accept(conn);
