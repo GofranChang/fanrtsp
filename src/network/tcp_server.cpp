@@ -77,4 +77,6 @@ void TcpServer::on_connect(int fd, short events, void* p) {
   srv->on_connect_internal(fd, events, p);
 }
 
+// void TcpServer::on_read_internal() {}
+
 }

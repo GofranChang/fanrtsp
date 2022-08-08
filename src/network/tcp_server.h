@@ -25,7 +25,7 @@ public:
 private:
   virtual void on_connect_internal(int fd, short events, void* args);
 
-  virtual void on_read_internal(int fd, short events, void* args);
+  // virtual void on_read_internal(int fd, short events, void* args);
 
 private:
   Socket server_socket_;
