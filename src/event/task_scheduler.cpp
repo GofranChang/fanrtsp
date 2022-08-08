@@ -2,8 +2,8 @@
 
 namespace gortsp {
 
-RtspStatus TaskScheduler::register_task(int fd, TaskFunction&& f, void* args) {
-  ebs_.register_event(fd, f, args);
+RtspStatus TaskScheduler::register_task(int fd, TaskFunction* f) {
+  ebs_.register_event(fd, f);
   return RtspStatus::SUCCESS;
 }
 

@@ -19,7 +19,7 @@ public:
     GLOGD("Event method : {}", ebs_.method());
   }
 
-  RtspStatus register_task(int fd, TaskFunction&& f, void* args);
+  RtspStatus register_task(int fd, TaskFunction* f);
 
   // Run loop
   void start();

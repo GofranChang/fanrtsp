@@ -46,35 +46,24 @@ RtspStatus TcpServer::init(uint16_t port) {
 
   GLOGD("TCP : server socket init success");
 
-  task_scheduler_.register_task(
-      server_socket_.fd(),
-      TcpServer::on_connect,
-      this);
+  on_connect_func_ = std::bind(&TcpServer::on_connect, this, std::placeholders::_1, std::placeholders::_2);
+  task_scheduler_.register_task(server_socket_.fd(), &on_connect_func_);
 
   return RtspStatus::SUCCESS;
-}
-
-void TcpServer::on_connect_internal(int fd, short events, void* args) {
-  if (fd != server_socket_.fd()) return;
-
-  GLOGD("On connect...");
-  TcpConnection conn;
-  server_socket_.accept(conn);
-
-  // connections_.insert(conn);
-
-  conn.send("Welcome to my server");
 }
 
 void TcpServer::start() {
   task_scheduler_.start();
 }
 
-void TcpServer::on_connect(int fd, short events, void* p) {
-  if (nullptr == p) return;
+RtspStatus TcpServer::on_connect(int fd, short events) {
+  GLOGT("On connection");
 
-  TcpServer* srv = static_cast<TcpServer*>(p);
-  srv->on_connect_internal(fd, events, p);
+  TcpConnection conn;
+  server_socket_.accept(conn);
+  conn.send("Welcome to my server");
+
+  return RtspStatus::SUCCESS;
 }
 
 // void TcpServer::on_read_internal() {}
