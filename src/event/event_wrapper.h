@@ -14,7 +14,7 @@
 
 namespace gortsp {
 
-using EventTaskCb = std::function<RtspStatus(int, short)>;
+using EventCb = std::function<RtspStatus(int, short)>;
 
 using EventIOTaskCb = std::function<RtspStatus()>;
 
@@ -27,8 +27,9 @@ public:
 private:
   Event(event_base* base,
         int fd,
-        EventTaskCb* cb) :
-      ptr_(event_new(base, fd, EV_TIMEOUT | EV_READ | EV_PERSIST, Event::event_cb, cb)) {}
+        EventCb* cb) :
+      ptr_(event_new(base, fd, EV_TIMEOUT | EV_READ | EV_PERSIST, Event::event_cb, this)),
+      callback_(cb) {}
 
   Event(const Event&) = delete;
 
@@ -44,8 +45,8 @@ public:
 
 public:
   static void event_cb(evutil_socket_t fd, short event, void* argc) {
-    EventTaskCb* cb = static_cast<EventTaskCb*>(argc);
-    (*cb)(fd, event);
+    Event* evt = static_cast<Event*>(argc);
+    (*(evt->callback_))(fd, event);
   }
 
 public:
@@ -53,9 +54,10 @@ public:
 
 private:
   event* ptr_;
+
+  EventCb* callback_;
 }; // class Event
 
-#if 0
 class BufferEvent {
 public:
   friend class EventBase;
@@ -63,9 +65,9 @@ public:
 private:
   BufferEvent(event_base* base,
               int fd,
-              EventTaskCb& read_cb,
-              EventTaskCb& write_cb,
-              EventTaskCb& error_cb,
+              EventCb& read_cb,
+              EventCb& write_cb,
+              EventCb& error_cb,
               void* argc) :
       ptr_(bufferevent_socket_new(base, fd, EV_TIMEOUT | EV_READ | EV_PERSIST)) {
     bufferevent_setcb(ptr_,
@@ -103,7 +105,6 @@ public:
 private:
   bufferevent* ptr_;
 }; // class BufferEvent
-#endif
 
 class EventBase {
 public:
@@ -127,16 +128,16 @@ public:
 
   inline event_base* get() { return ptr_; }
 
-  void register_event(int fd, EventTaskCb* cb) {
+  void register_event(int fd, EventCb* cb) {
     std::unique_ptr<Event> ev(new Event(ptr_, fd, cb));
     event_add(ev->get(), nullptr);
     events_.push_back(std::move(ev));
   }
 
   void register_bufferevent(int fd,
-                            EventTaskCb& read_cb,
-                            EventTaskCb& write_cb,
-                            EventTaskCb& err_cb) {}
+                            EventCb& read_cb,
+                            EventCb& write_cb,
+                            EventCb& err_cb) {}
 
   void start() {
     int res = event_base_loop(ptr_, 0);

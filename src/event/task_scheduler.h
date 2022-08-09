@@ -2,10 +2,11 @@
 
 #include <vector>
 #include <thread>
+#include <memory>
 #include <functional>
 
 #include "common/thread_pool.hpp"
-#include "event/event_wrapper.h"
+#include "event/event_handler.h"
 
 namespace gortsp {
 
@@ -13,13 +14,9 @@ using message_pack = void*;
 
 class TaskScheduler {
 public:
-  TaskScheduler(size_t max_threads) :
-      max_threads_(max_threads),
-      thread_pool_(max_threads) {
-    GLOGD("Event method : {}", ebs_.method());
-  }
+  explicit TaskScheduler(size_t max_threads);
 
-  RtspStatus register_task(int fd, EventTaskCb* f);
+  RtspStatus register_task(int fd, EventCb* f);
 
   // Run loop
   void start();
@@ -30,7 +27,7 @@ private:
   size_t max_threads_;
   ThreadPool thread_pool_;
 
-  EventBase ebs_;
+  std::shared_ptr<EventHandler> evt_handler_;
 };
 
 } // namespace gortsp

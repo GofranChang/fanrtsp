@@ -14,7 +14,8 @@ set(NETWORK_SRC
 )
 
 set(TASK_SRC
-  src/event/event_wrapper.h
+  src/event/event_handler.h
+  src/event/event_handler.cpp
   src/event/task_scheduler.h
   src/event/task_scheduler.cpp
 )
