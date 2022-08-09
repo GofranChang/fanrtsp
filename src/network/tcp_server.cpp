@@ -49,6 +49,9 @@ RtspStatus TcpServer::init(uint16_t port) {
   on_connect_func_ = std::bind(&TcpServer::on_connect, this, std::placeholders::_1, std::placeholders::_2);
   task_scheduler_.register_task(server_socket_.fd(), &on_connect_func_);
 
+  on_read_func_ = std::bind(&TcpServer::on_read, this, std::placeholders::_1, std::placeholders::_2);
+  on_disconnect_func_ = std::bind(&TcpServer::on_diconnect, this, std::placeholders::_1, std::placeholders::_2);
+
   return RtspStatus::SUCCESS;
 }
 
@@ -61,8 +64,19 @@ RtspStatus TcpServer::on_connect(int fd, short events) {
 
   TcpConnection conn;
   server_socket_.accept(conn);
-  conn.send("Welcome to my server");
+  // conn.send("Welcome to my server");
 
+  task_scheduler_.register_iotask(conn.fd(), &on_read_func_, nullptr, &on_disconnect_func_);
+  return RtspStatus::SUCCESS;
+}
+
+RtspStatus TcpServer::on_read(int fd, std::string buff) {
+  GLOGT("Read buffer {}", buff);
+  return RtspStatus::SUCCESS;
+}
+
+RtspStatus TcpServer::on_diconnect(int fd, short events) {
+  GLOGE("On disconnect");
   return RtspStatus::SUCCESS;
 }
 

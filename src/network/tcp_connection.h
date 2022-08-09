@@ -32,6 +32,8 @@ public:
 
   RtspStatus recv();
 
+  inline int fd() const { return socket_.fd(); };
+
   inline bool connected() const { return socket_.connected(); }
 
 private:

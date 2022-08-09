@@ -1,6 +1,7 @@
 #pragma once
 
 #include <set>
+#include <string>
 #include <functional>
 
 #include "event/task_scheduler.h"
@@ -24,7 +25,9 @@ public:
 private:
   virtual RtspStatus on_connect(int fd, short events);
 
-  // virtual void on_read_internal(int fd, short events, void* args);
+  virtual RtspStatus on_read(int fd, std::string buff);
+
+  virtual RtspStatus on_diconnect(int fd, short events);
 
 private:
   Socket server_socket_;
@@ -34,7 +37,9 @@ private:
 
   TaskScheduler task_scheduler_;
 
-  std::function<RtspStatus(int fd, short event)> on_connect_func_;
+  std::function<RtspStatus(int, short)> on_connect_func_;
+  std::function<RtspStatus(int, std::string)> on_read_func_;
+  std::function<RtspStatus(int, short)> on_disconnect_func_;
 };
 
 }

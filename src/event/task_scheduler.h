@@ -16,7 +16,12 @@ class TaskScheduler {
 public:
   explicit TaskScheduler(size_t max_threads);
 
-  RtspStatus register_task(int fd, EventCb* f);
+  void register_task(int fd, EventCb* f);
+
+  void register_iotask(int fd,
+                       IOEventCb* r_cb,
+                       IOEventCb* w_cb,
+                       EventCb* e_cb);
 
   // Run loop
   void start();
