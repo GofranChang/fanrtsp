@@ -64,7 +64,7 @@ RtspStatus TcpServer::on_connect(int fd, short events) {
 
   TcpConnection conn;
   server_socket_.accept(conn);
-  // conn.send("Welcome to my server");
+  conn.send("Welcome to my server");
 
   task_scheduler_.register_iotask(conn.fd(), &on_read_func_, nullptr, &on_disconnect_func_);
   return RtspStatus::SUCCESS;

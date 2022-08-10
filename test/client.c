@@ -16,7 +16,7 @@ int main() {
     memset(&server_addr,0,sizeof(server_addr)); //数据初始化--清零
     server_addr.sin_family=AF_INET; //设置为IP通信
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");//服务器IP地址
-    server_addr.sin_port = htons(8554); //服务器端口号
+    server_addr.sin_port = htons(8999); //服务器端口号
 
     client_fd = socket(PF_INET, SOCK_STREAM, 0);
     if (client_fd < 1) {
@@ -41,13 +41,9 @@ int main() {
 
     memset(buf, 0, 1024);
     printf("fd : %d\n", client_fd);
-    int len2 = recv(client_fd, buf, 1024, 0); //继续接收服务端返回的数据
-    printf("????? %d\n", len);
-    buf[len2] = '\0';
-    puts(buf);
 
-    while (1) {
-    }
+    int n = send(client_fd, "Helloworld\0", strlen("Helloworld") + 1, 0);
+    printf("xxxxx %d\n", n);
 
     shutdown(client_fd,2); //关闭socket
 

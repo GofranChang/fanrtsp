@@ -56,16 +56,18 @@ public:
 private:
   BufferEvent(event_base* base,
               int fd,
-              IOEventCb* read_cb,
-              IOEventCb* write_cb,
-              EventCb* error_cb) :
-      ptr_(bufferevent_socket_new(base, fd, EV_TIMEOUT | EV_READ | EV_PERSIST)),
+              IOEventCb* r_cb,
+              IOEventCb* w_cb,
+              EventCb* e_cb) :
+      ptr_(bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE)),
       ev_buf_(evbuffer_new()),
-      read_callback_(read_cb),
-      write_callback_(write_cb),
-      error_callback_(error_cb) {
+      read_callback_(r_cb),
+      write_callback_(w_cb),
+      error_callback_(e_cb) {
     bufferevent_setcb(ptr_, BufferEvent::read_cb,
-                      BufferEvent::write_cb, BufferEvent::error_cb, this);
+                      nullptr, BufferEvent::error_cb, nullptr);
+    bufferevent_enable(ptr_, EV_READ | EV_WRITE | EV_PERSIST);
+    bufferevent_setwatermark(ptr_, EV_READ, 0, 0);
   }
 
   BufferEvent(const Event&) = delete;
@@ -86,13 +88,16 @@ public:
 
 public:
   static void read_cb(struct bufferevent *bev, void *ctx) {
+    GLOGE("")
     BufferEvent* evt = static_cast<BufferEvent*>(ctx);
 
     char line[MAX_LINE + 1] = { 0 };
     int n = 0;
 
+    GLOGE("?????")
     while (n = bufferevent_read(bev, line, MAX_LINE), n > 0) {
       line[n] = '\0';
+      GLOGE("")
       evbuffer_add(evt->ev_buf_, line, n);
 
       // const char *x = "==";
@@ -102,17 +107,21 @@ public:
       // }
     }
 
+    GLOGE("????? {}", line)
+
     if (evt->read_callback_)
       (*(evt->read_callback_))(-1, 0);
   }
 
   static void write_cb(struct bufferevent *bev, void *ctx) {
+    GLOGE("")
     BufferEvent* evt = static_cast<BufferEvent*>(ctx);
     if (evt->write_callback_)
       (*(evt->write_callback_))(-1, 0);
   }
 
   static void error_cb(struct bufferevent *bev, short what, void *ctx) {
+    GLOGE("")
     BufferEvent* evt = static_cast<BufferEvent*>(ctx);
     if (evt->error_callback_)
       (*(evt->error_callback_))(-1, 0);
@@ -151,6 +160,7 @@ public:
                                 IOEventCb* read_cb,
                                 IOEventCb* write_cb,
                                 EventCb* error_cb) override {
+    GLOGD("regist io event, fd {}", fd);
     std::unique_ptr<BufferEvent> bev(new BufferEvent(ptr_, fd, read_cb, write_cb, error_cb));
     buffer_events_.push_back(std::move(bev));
   }

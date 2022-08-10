@@ -14,6 +14,7 @@
 #define MAX_LINE    256
 
 void read_cb(struct bufferevent *bev, void *arg) {
+    printf("???????????\n");
     struct evbuffer *buf = (struct evbuffer *)arg;
     char line[MAX_LINE+1];
     int n;
@@ -95,7 +96,7 @@ int main() {
     memset(&server_addr,0,sizeof(server_addr)); //数据初始化--清零
     server_addr.sin_family = AF_INET; //设置为IP通信
     server_addr.sin_addr.s_addr = INADDR_ANY;//服务器IP地址--允许连接到所有本地地址上
-    server_addr.sin_port = htons(8001); //服务器端口号
+    server_addr.sin_port = htons(8999); //服务器端口号
 
     //创建服务端套接字
     server_socketfd = socket(PF_INET,SOCK_STREAM,0);
