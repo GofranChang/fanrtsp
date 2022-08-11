@@ -4,37 +4,39 @@
 
 namespace gortsp {
 
-// TcpConnection* TcpConnection::create_from_accept() {
-//   return nullptr;
-// }
-
-// TcpConnection* TcpConnection::create_from_connect() {
-//   return nullptr;
-// }
+std::shared_ptr<TcpConnection> TcpConnection::create() {
+  return std::make_shared<TcpConnection>();
+}
 
 TcpConnection::TcpConnection() :
     remote_ip_(""),
     remote_port_(0),
     local_ip_(""),
     local_port_(0),
-    socket_(Socket::SocketType::TCP_SOCKET) {
+    socket_(nullptr) {
 }
 
 TcpConnection::~TcpConnection() {
   disconnect();
 }
 
-RtspStatus TcpConnection::accept(Socket& socket) {
-  socket_.move(socket);
+RtspStatus TcpConnection::accept(std::shared_ptr<Socket> socket) {
+  if (socket_.get()) {
+    GLOGE("Accept tcp connection failed, current socket already init");
+    return RtspStatus::MULTI_OPERATOR;
+  }
+
+  socket_ = socket;
   return RtspStatus::SUCCESS;
 }
 
 RtspStatus TcpConnection::connect(const std::string& remote_ip, uint16_t remote_port) {
-  if (socket_.stat() != Socket::SocketStat::CREATED ||
-          socket_.stat() != Socket::SocketStat::BINDED) {
-    // 
+  if (socket_.get()) {
+    GLOGE("Accept tcp connection failed, current socket already init");
+    return RtspStatus::MULTI_OPERATOR;
   }
 
+  socket_ = Socket::create(Socket::SocketType::TCP_SOCKET);
   if (socket_.connect(remote_ip, remote_port, 0) != RtspStatus::SUCCESS) {
     GLOGE("TCP connect failed");
     // return 

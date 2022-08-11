@@ -12,6 +12,18 @@
 
 namespace gortsp {
 
+std::shared_ptr<Socket> Socket::create() {
+  return std::make_shared<Socket>();
+}
+
+std::shared_ptr<Socket> Socket::create(SocketType type) {
+  return std::make_shared<Socket>(type);
+}
+
+std::shared_ptr<Socket> create_from_accept(int fd) {
+  return std::make_shared<Socket>(fd);
+}
+
 Socket::Socket() :
     type_(SocketType::UDP_SOCKET),
     fd_(-1),
@@ -26,34 +38,15 @@ Socket::Socket(SocketType type) :
     connected_(false) {
 }
 
-Socket::Socket(Socket&& other) {
-  type_ = other.type_;
-  status_ = other.status_;
-  fd_ = other.fd_;
-  connected_ = other.connected_;
-
-  other.type_ = SocketType::UDP_SOCKET;
-  other.status_ = SocketStat::UNINITIALIZED;
-  other.fd_ = -1;
-  other.connected_ = false;
+Socket::Socket(int fd) :
+    type_(SocketType::TCP_SOCKET),
+    fd_(fd),
+    status_(SocketStat::CONNETED),
+    connected_(true) {
 }
 
 Socket::~Socket() {
   close();
-}
-
-RtspStatus Socket::move(Socket& other) {
-  type_ = other.type();
-  fd_ = other.fd();
-  status_ = other.stat();
-  other.connected_ = other.connected();
-
-  other.type_ = SocketType::UDP_SOCKET;
-  other.fd_ = -1;
-  other.status_ = SocketStat::UNINITIALIZED;
-  other.connected_ = false;
-
-  return RtspStatus::SUCCESS;
 }
 
 RtspStatus Socket::set_type(SocketType type) {
@@ -67,7 +60,7 @@ RtspStatus Socket::set_type(SocketType type) {
 }
 
 RtspStatus Socket::create() {
-  if (status_ > SocketStat::UNINITIALIZED) {
+  if (status_ > SocketStat::UNINITIALIZED || fd_ >= 0) {
     GLOGE("Create socket failed, current fd {}, already created", fd_);
     return RtspStatus::MULTI_OPERATOR;
   }
@@ -147,11 +140,10 @@ RtspStatus Socket::accept(TcpConnection& conn) {
 
   Socket connsock;
   GLOGT("Start accept, local fd {}", fd_);
-  int connected_fd = ::accept(fd_, (struct sockaddr*)&addr, &addrlen);
-  connsock.set_fd(connected_fd);
+  int connectfd = ::accept(fd_, (struct sockaddr*)&addr, &addrlen);
+  auto connsock = Socket::create_from_accept(connectfd);
 
   GLOGT("Connected fd {}", connsock.fd());
-
   conn.accept(connsock);
 
   // TODO: Set none block fd;
@@ -254,16 +246,6 @@ RtspStatus Socket::set_non_block() {
 
 RtspStatus Socket::set_block(int timeout) {
   return RtspStatus::UNINITIALIZED;
-}
-
-RtspStatus Socket::set_fd(int fd) {
-  if (fd_ > 0) {
-    GLOGE("Set fd failed, cur fd {}", fd_);
-    return RtspStatus::MULTI_OPERATOR;
-  }
-
-  fd_ = fd;
-  return RtspStatus::SUCCESS;
 }
 
 }

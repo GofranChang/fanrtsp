@@ -8,13 +8,13 @@
 namespace gortsp {
 
 TcpServer::TcpServer() :
-    server_socket_(Socket::SocketType::TCP_SOCKET),
+    server_socket_(Socket::create(Socket::SocketType::TCP_SOCKET)),
     max_connections_(16),
     task_scheduler_(17) {
 }
 
 TcpServer::TcpServer(uint16_t max_connections) :
-    server_socket_(Socket::SocketType::TCP_SOCKET),
+    server_socket_(Socket::create(Socket::SocketType::TCP_SOCKET)),
     max_connections_(max_connections),
     task_scheduler_(max_connections + 1) {
 }

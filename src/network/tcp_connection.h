@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "socket.h"
 
@@ -17,6 +18,9 @@ public:
   friend class Socket;
 
 public:
+  std::shared_ptr<TcpConnection> create();
+
+private:
   TcpConnection();
 
   ~TcpConnection();
@@ -43,7 +47,7 @@ private:
   std::string local_ip_;
   uint16_t local_port_;
 
-  Socket socket_;
+  std::shared_ptr<Socket> socket_;
 };
 
 }

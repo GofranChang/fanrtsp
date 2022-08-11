@@ -2,6 +2,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <memory>
 
 #include "rtsp_status.hpp"
 
@@ -25,20 +26,29 @@ public:
     CONNETED,
   };
 
+public:
+  static std::shared_ptr<Socket> create();
+
+  static std::shared_ptr<Socket> create(SocketType type);
+
+private:
+  static std::shared_ptr<Socket> create_from_accept(int fd);
+
+private:
   Socket();
 
   explicit Socket(SocketType type);
 
-  Socket(Socket&&);
+  explicit Socket(int fd);
 
   ~Socket();
 
-  RtspStatus move(Socket& other);
-
 private:
-  Socket(const Socket&) = delete;
+  Socket(Socket&&) = default;
 
-  Socket operator=(const Socket&) = delete;
+  Socket(const Socket&) = default;
+
+  Socket operator=(const Socket&) = default;
 
 public:
   RtspStatus set_type(SocketType type);
@@ -66,8 +76,6 @@ public:
   RtspStatus set_block(int timeout);
 
   inline SocketType type() const { return type_; }
-
-  RtspStatus set_fd(int fd);
 
   inline int fd() const { return fd_; }
 

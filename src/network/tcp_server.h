@@ -30,7 +30,7 @@ private:
   virtual RtspStatus on_diconnect(int fd, short events);
 
 private:
-  Socket server_socket_;
+  std::shared_ptr<Socket> server_socket_;
 
   uint16_t max_connections_;
   std::set<TcpConnection> connections_;
