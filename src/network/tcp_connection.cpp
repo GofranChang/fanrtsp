@@ -5,7 +5,8 @@
 namespace gortsp {
 
 std::shared_ptr<TcpConnection> TcpConnection::create() {
-  return std::make_shared<TcpConnection>();
+  TcpConnection* p = new TcpConnection;
+  return std::shared_ptr<TcpConnection>(p);
 }
 
 TcpConnection::TcpConnection() :
@@ -21,7 +22,7 @@ TcpConnection::~TcpConnection() {
 }
 
 RtspStatus TcpConnection::accept(std::shared_ptr<Socket> socket) {
-  if (socket_.get()) {
+  if (socket_) {
     GLOGE("Accept tcp connection failed, current socket already init");
     return RtspStatus::MULTI_OPERATOR;
   }
@@ -31,19 +32,21 @@ RtspStatus TcpConnection::accept(std::shared_ptr<Socket> socket) {
 }
 
 RtspStatus TcpConnection::connect(const std::string& remote_ip, uint16_t remote_port) {
-  if (socket_.get()) {
+  if (socket_) {
     GLOGE("Accept tcp connection failed, current socket already init");
     return RtspStatus::MULTI_OPERATOR;
   }
 
+#if 0
   socket_ = Socket::create(Socket::SocketType::TCP_SOCKET);
-  if (socket_.connect(remote_ip, remote_port, 0) != RtspStatus::SUCCESS) {
+  if (socket_->connect(remote_ip, remote_port, 0) != RtspStatus::SUCCESS) {
     GLOGE("TCP connect failed");
     // return 
   }
   
   remote_ip_ = remote_ip;
   remote_port_ = remote_port;
+#endif
 
   return RtspStatus::SUCCESS;
 }
@@ -54,11 +57,11 @@ RtspStatus TcpConnection::disconnect() {
     // 
   }
 
-  return socket_.disconnect();
+  return socket_->disconnect();
 }
 
 RtspStatus TcpConnection::send(const std::string& data) {
-  return socket_.send(data);
+  return socket_->send(data);
 }
 
 }

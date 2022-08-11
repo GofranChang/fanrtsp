@@ -24,22 +24,22 @@ TcpServer::~TcpServer() {
 }
 
 RtspStatus TcpServer::init(uint16_t port) {
-  if (server_socket_.create() != RtspStatus::SUCCESS) {
+  if (server_socket_->init() != RtspStatus::SUCCESS) {
     GLOGE("TCP server err : create server socket failed");
     return RtspStatus::INTERNAL_ERR;
   }
 
-  if (server_socket_.set_non_block() != RtspStatus::SUCCESS) {
+  if (server_socket_->set_non_block() != RtspStatus::SUCCESS) {
     GLOGE("TCP server err : set socket non block failed");
     return RtspStatus::INTERNAL_ERR;
   }
 
-  if (server_socket_.bind("0.0.0.0", port) != RtspStatus::SUCCESS) {
+  if (server_socket_->bind("0.0.0.0", port) != RtspStatus::SUCCESS) {
     GLOGE("TCP server err : bind local addr failed");
     return RtspStatus::INTERNAL_ERR;
   }
 
-  if (server_socket_.listen(10) != RtspStatus::SUCCESS) {
+  if (server_socket_->listen(10) != RtspStatus::SUCCESS) {
     GLOGE("TCP server err : bind local addr failed");
     return RtspStatus::INTERNAL_ERR;
   }
@@ -47,7 +47,7 @@ RtspStatus TcpServer::init(uint16_t port) {
   GLOGD("TCP : server socket init success");
 
   on_connect_func_ = std::bind(&TcpServer::on_connect, this, std::placeholders::_1, std::placeholders::_2);
-  task_scheduler_.register_task(server_socket_.fd(), &on_connect_func_);
+  task_scheduler_.register_task(server_socket_->fd(), &on_connect_func_);
 
   on_read_func_ = std::bind(&TcpServer::on_read, this, std::placeholders::_1, std::placeholders::_2);
   on_disconnect_func_ = std::bind(&TcpServer::on_diconnect, this, std::placeholders::_1, std::placeholders::_2);
@@ -62,11 +62,12 @@ void TcpServer::start() {
 RtspStatus TcpServer::on_connect(int fd, short events) {
   GLOGT("On connection, event {}", events);
 
-  TcpConnection conn;
-  server_socket_.accept(conn);
-  conn.send("Welcome to my server");
+  std::shared_ptr<TcpConnection> conn = TcpConnection::create();
+  server_socket_->accept(conn);
+  conn->send("Welcome to my server");
 
-  task_scheduler_.register_iotask(conn.fd(), &on_read_func_, nullptr, &on_disconnect_func_);
+  connections_.insert(std::make_pair(conn->fd(), conn));
+  task_scheduler_.register_iotask(conn->fd(), &on_read_func_, nullptr, &on_disconnect_func_);
   return RtspStatus::SUCCESS;
 }
 

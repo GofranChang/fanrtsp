@@ -13,15 +13,18 @@
 namespace gortsp {
 
 std::shared_ptr<Socket> Socket::create() {
-  return std::make_shared<Socket>();
+  Socket* p = new Socket();
+  return std::shared_ptr<Socket>(p);
 }
 
 std::shared_ptr<Socket> Socket::create(SocketType type) {
-  return std::make_shared<Socket>(type);
+  Socket* p = new Socket(type);
+  return std::shared_ptr<Socket>(p);
 }
 
-std::shared_ptr<Socket> create_from_accept(int fd) {
-  return std::make_shared<Socket>(fd);
+std::shared_ptr<Socket> Socket::create_from_accept(int fd) {
+  Socket* p = new Socket(fd);
+  return std::shared_ptr<Socket>(p);
 }
 
 Socket::Socket() :
@@ -59,7 +62,7 @@ RtspStatus Socket::set_type(SocketType type) {
   return RtspStatus::SUCCESS;
 }
 
-RtspStatus Socket::create() {
+RtspStatus Socket::init() {
   if (status_ > SocketStat::UNINITIALIZED || fd_ >= 0) {
     GLOGE("Create socket failed, current fd {}, already created", fd_);
     return RtspStatus::MULTI_OPERATOR;
@@ -81,6 +84,7 @@ RtspStatus Socket::create() {
 }
 
 RtspStatus Socket::close() {
+  GLOGT("Close socket {}", fd_);
   if (fd_ >= 0) {
     ::close(fd_);
   }
@@ -127,7 +131,7 @@ RtspStatus Socket::listen(int backlog) {
   return RtspStatus::SUCCESS;
 }
 
-RtspStatus Socket::accept(TcpConnection& conn) {
+RtspStatus Socket::accept(std::shared_ptr<TcpConnection>& conn) {
   if (type_ != SocketType::TCP_SOCKET || status_ != SocketStat::LISTENED) {
     GLOGE("Listen failed, socket type {}, cur status {}", type_, status_);
     return RtspStatus::ILLEGAL_PARAMS;
@@ -138,13 +142,12 @@ RtspStatus Socket::accept(TcpConnection& conn) {
   struct sockaddr_in addr = { 0 };
   socklen_t addrlen = sizeof(struct sockaddr_in);
 
-  Socket connsock;
   GLOGT("Start accept, local fd {}", fd_);
-  int connectfd = ::accept(fd_, (struct sockaddr*)&addr, &addrlen);
-  auto connsock = Socket::create_from_accept(connectfd);
+  int fd = ::accept(fd_, (struct sockaddr*)&addr, &addrlen);
+  auto connsock = Socket::create_from_accept(fd);
 
-  GLOGT("Connected fd {}", connsock.fd());
-  conn.accept(connsock);
+  GLOGT("Connected fd {}", connsock->fd());
+  conn->accept(connsock);
 
   // TODO: Set none block fd;
   // setNonBlockAndCloseOnExec(connfd);
@@ -155,7 +158,9 @@ RtspStatus Socket::accept(TcpConnection& conn) {
 
 RtspStatus Socket::connect(const std::string& ip,
                            uint16_t port,
-                           int timeout) {
+                           int timeout,
+                           std::shared_ptr<TcpConnection>& conn) {
+#if 0
   if (type_ != SocketType::TCP_SOCKET || status_ != SocketStat::BINDED) {
     GLOGE("Connect failed, socket type {}, cur status {}", type_, status_);
     return RtspStatus::ILLEGAL_PARAMS;
@@ -192,6 +197,7 @@ RtspStatus Socket::connect(const std::string& ip,
       connected_ = false;
     }
   }
+#endif
 
   return RtspStatus::SUCCESS;
 }

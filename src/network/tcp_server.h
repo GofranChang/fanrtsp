@@ -1,6 +1,6 @@
 #pragma once
 
-#include <set>
+#include <unordered_map>
 #include <string>
 #include <functional>
 
@@ -33,7 +33,7 @@ private:
   std::shared_ptr<Socket> server_socket_;
 
   uint16_t max_connections_;
-  std::set<TcpConnection> connections_;
+  std::unordered_map<int, std::shared_ptr<TcpConnection>> connections_;
 
   TaskScheduler task_scheduler_;
 

@@ -18,15 +18,16 @@ public:
   friend class Socket;
 
 public:
-  std::shared_ptr<TcpConnection> create();
+  static std::shared_ptr<TcpConnection> create();
 
 private:
   TcpConnection();
 
+public:
   ~TcpConnection();
 
 public:
-  RtspStatus accept(Socket& socket);
+  RtspStatus accept(std::shared_ptr<Socket> socket);
 
   RtspStatus connect(const std::string& remote_ip, uint16_t remote_port);
 
@@ -36,9 +37,9 @@ public:
 
   RtspStatus recv();
 
-  inline int fd() const { return socket_.fd(); };
+  inline int fd() const { return socket_.get() ? socket_->fd() : -1; };
 
-  inline bool connected() const { return socket_.connected(); }
+  inline bool connected() const { return socket_.get() ? socket_->connected() : false; }
 
 private:
   std::string remote_ip_;

@@ -41,19 +41,13 @@ private:
 
   explicit Socket(int fd);
 
+public:
   ~Socket();
-
-private:
-  Socket(Socket&&) = default;
-
-  Socket(const Socket&) = default;
-
-  Socket operator=(const Socket&) = default;
 
 public:
   RtspStatus set_type(SocketType type);
 
-  RtspStatus create();
+  RtspStatus init();
 
   RtspStatus close();
 
@@ -61,11 +55,12 @@ public:
 
   RtspStatus listen(int backlog);
 
-  RtspStatus accept(TcpConnection& conn);
+  RtspStatus accept(std::shared_ptr<TcpConnection>& conn);
 
   RtspStatus connect(const std::string& ip,
                      uint16_t port,
-                     int timeout);
+                     int timeout,
+                     std::shared_ptr<TcpConnection>& conn);
 
   RtspStatus disconnect();
 
