@@ -3,21 +3,27 @@ set(CMAKE_CXX_STANDARD 11)
 
 project(gortsp)
 
-set(NETWORK_SRC
-  src/network/socket.h
-  src/network/socket.cpp
-  src/network/tcp_connection.h
-  src/network/tcp_connection.cpp
+# set(NETWORK_SRC
+#   src/network/socket.h
+#   src/network/socket.cpp
+#   src/network/tcp_connection.h
+#   src/network/tcp_connection.cpp
   
-  src/network/tcp_server.h
-  src/network/tcp_server.cpp
-)
+#   src/network/tcp_server.h
+#   src/network/tcp_server.cpp
+# )
 
-set(TASK_SRC
-  src/event/event_handler.h
-  src/event/event_handler.cpp
-  src/event/task_scheduler.h
-  src/event/task_scheduler.cpp
+# set(TASK_SRC
+#   src/event/event_handler.h
+#   src/event/event_handler.cpp
+#   src/event/task_scheduler.h
+#   src/event/task_scheduler.cpp
+# )
+
+file(GLOB NETWORK_SRC
+  src/net/*.h
+  src/net/*.hpp
+  src/net/*.cpp
 )
 
 add_subdirectory(third_party/libevent libevent.out EXCLUDE_FROM_ALL)
